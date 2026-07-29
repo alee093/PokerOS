@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TournamentFormat {
+  FREEZEOUT
+  REENTRY
+  PKO
+  MYSTERY_BOUNTY
+  SATELLITE
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
+  ARS
+}
+
+model User {
+  id String @id @default(uuid())
+
+  username     String
+  email        String @unique
+  passwordHash String
+
+  avatarUrl String?
+
+  country  String?
+  timezone String?
+  currency Currency @default(USD)
+
+  tournaments Tournament[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PokerSite {
+  id String @id @default(uuid())
+
+  name    String  @unique
+  logoUrl String?
+
+  tournaments Tournament[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tournament {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  siteId String
+  site   PokerSite @relation(fields: [siteId], references: [id])
+
+  name String
+
+  format TournamentFormat
+
+  gameType String
+
+  currency Currency
+
+  entries Int @default(1)
+
+  buyIn     Decimal @db.Decimal(10, 2)
+  fee       Decimal @db.Decimal(10, 2)
+  totalCost Decimal @db.Decimal(10, 2)
+
+  bountyCollected Decimal @default(0) @db.Decimal(10, 2)
+
+  prize  Decimal @db.Decimal(10, 2)
+  profit Decimal @db.Decimal(10, 2)
+
+  position     Int?
+  playersCount Int?
+
+  isITM Boolean @default(false)
+
+  startedAt  DateTime
+  finishedAt DateTime?
+
+  duration Int?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
