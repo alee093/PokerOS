@@ -3,6 +3,8 @@ import { prisma } from "../../lib/prisma.js";
 import type { RegisterInput } from "./auth.schema.js";
 import { generateToken } from "../../utils/jwt.js";
 import type { LoginInput } from "./auth.schema.js";
+import { createVerificationToken } from "./services/verification.service.js";
+import { sendVerificationEmail } from "../../services/email/email.service.js";
 
 
 export async function loginUser(data: LoginInput) {
@@ -18,6 +20,9 @@ export async function loginUser(data: LoginInput) {
     throw new Error("Invalid credentials");
   }
 
+  if (!user.emailVerified) {
+    throw new Error("Please verify your email first");
+  }
 
   const passwordMatch = await bcrypt.compare(
     data.password,
@@ -74,6 +79,17 @@ export async function registerUser(data: RegisterInput) {
       passwordHash,
     },
   });
+
+  const verificationToken = await createVerificationToken(
+    user.id
+  );
+
+
+  await sendVerificationEmail(
+    user.username,
+    user.email,
+    `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`
+  );
 
 
   return {

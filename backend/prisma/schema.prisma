@@ -28,6 +28,8 @@ model User {
   email        String @unique
   passwordHash String
 
+  emailVerified Boolean @default(false)
+
   avatarUrl String?
 
   country  String?
@@ -35,6 +37,8 @@ model User {
   currency Currency @default(USD)
 
   tournaments Tournament[]
+
+  verificationTokens VerificationToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,4 +98,17 @@ model Tournament {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  id String @id @default(uuid())
+
+  token String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
 }
