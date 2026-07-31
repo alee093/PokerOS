@@ -21,6 +21,21 @@ enum Currency {
   ARS
 }
 
+enum GameType {
+  NLH
+  PLO
+  PLO5
+  MIXED
+  OTHER
+}
+
+enum TournamentSpeed {
+  REGULAR
+  TURBO
+  HYPER
+  DEEPSTACK
+}
+
 model User {
   id String @id @default(uuid())
 
@@ -69,7 +84,8 @@ model Tournament {
 
   format TournamentFormat
 
-  gameType String
+  gameType GameType
+  speed    TournamentSpeed
 
   currency Currency
 
@@ -79,6 +95,7 @@ model Tournament {
   fee       Decimal @db.Decimal(10, 2)
   totalCost Decimal @db.Decimal(10, 2)
 
+  isBounty        Boolean @default(false)
   bountyCollected Decimal @default(0) @db.Decimal(10, 2)
 
   prize  Decimal @db.Decimal(10, 2)
