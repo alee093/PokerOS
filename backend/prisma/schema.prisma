@@ -36,6 +36,11 @@ enum TournamentSpeed {
   DEEPSTACK
 }
 
+enum BankrollTransactionType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
 model User {
   id String @id @default(uuid())
 
@@ -50,6 +55,10 @@ model User {
   country  String?
   timezone String?
   currency Currency @default(USD)
+
+  bankroll Bankroll?
+
+  bankrollTransactions BankrollTransaction[]
 
   tournaments Tournament[]
 
@@ -126,6 +135,33 @@ model VerificationToken {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   expiresAt DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model Bankroll {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  startingBalance Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BankrollTransaction {
+  id String @id @default(uuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type BankrollTransactionType
+
+  amount Decimal @db.Decimal(10, 2)
+
+  description String?
 
   createdAt DateTime @default(now())
 }

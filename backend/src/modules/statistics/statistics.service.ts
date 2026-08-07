@@ -4,6 +4,8 @@ import { mapTournamentsToStatisticsData } from "./utils/tournament-mapper.js";
 
 import { calculateTotals } from "./utils/calculations/calculate-totals.js";
 
+import { getBankrollSummary } from "../bankroll/bankroll.service.js";
+
 import {
   calculateABI,
   calculateAverageProfit,
@@ -13,6 +15,8 @@ import {
 } from "./utils/calculations/calculate-metrics.js";
 
 import type { StatisticsOverview } from "./types/overview.js";
+
+import { filterCurrentMonth } from "./utils/filter-current-month.js";
 
 export async function getStatisticsOverview(
   userId: string
@@ -26,8 +30,16 @@ export async function getStatisticsOverview(
   const statisticsData =
     mapTournamentsToStatisticsData(tournaments);
 
+  const currentMonthData =
+    filterCurrentMonth(statisticsData);
+
+  const currentMonthTotals =
+    calculateTotals(currentMonthData);  
+
   const totals =
     calculateTotals(statisticsData);
+
+  const bankroll = await getBankrollSummary(userId);
 
   const roi = calculateROI(
     totals.totalProfit,
@@ -56,17 +68,23 @@ export async function getStatisticsOverview(
 
   return {
     thisMonth: {
-      tournaments: 0,
-      buyIns: 0,
-      prizes: 0,
-      profit: 0,
+      tournaments: currentMonthTotals.totalTournaments,
+
+      buyIns: currentMonthTotals.totalBuyIns,
+
+      prizes: currentMonthTotals.totalPrize,
+
+      profit: currentMonthTotals.totalProfit,
     },
 
     bankroll: {
-      current: 0,
-      starting: 0,
-      deposits: 0,
-      withdrawals: 0,
+      current: bankroll.currentBalance,
+
+      starting: bankroll.startingBalance,
+
+      deposits: bankroll.deposits,
+
+      withdrawals: bankroll.withdrawals,
     },
 
     lifetime: {

@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
+import { UnauthorizedError } from "../errors/UnauthorizedError.js";
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 interface JwtPayload {
@@ -10,23 +12,23 @@ interface JwtPayload {
 
 export function authMiddleware(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({
-      message: "Authentication required",
-    });
+    return next(
+      new UnauthorizedError("Authentication required")
+    );
   }
 
   const [type, token] = authHeader.split(" ");
 
   if (type !== "Bearer" || !token) {
-    return res.status(401).json({
-      message: "Invalid token",
-    });
+    return next(
+      new UnauthorizedError("Invalid token")
+    );
   }
 
   try {
@@ -43,8 +45,10 @@ export function authMiddleware(
     next();
 
   } catch {
-    return res.status(401).json({
-      message: "Invalid or expired token",
-    });
+    next(
+      new UnauthorizedError(
+        "Invalid or expired token"
+      )
+    );
   }
 }

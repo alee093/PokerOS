@@ -9,6 +9,8 @@ import {
   calculateTotalCost,
 } from "./services/tournament-calculator.service.js";
 
+import { NotFoundError } from "../../errors/NotFoundError.js";
+
 export async function createTournament(
   userId: string,
   data: CreateTournamentInput
@@ -130,7 +132,7 @@ export async function getTournamentById(
   });
 
   if (!tournament) {
-    throw new Error("Tournament not found");
+    throw new NotFoundError("Tournament not found");
   }
 
   return tournament;
@@ -148,7 +150,7 @@ export async function deleteTournament(
   });
 
   if (!tournament) {
-    throw new Error("Tournament not found");
+    throw new NotFoundError("Tournament not found");
   }
 
   await prisma.tournament.delete({
@@ -171,7 +173,7 @@ export async function updateTournament(
   });
 
   if (!tournament) {
-    throw new Error("Tournament not found");
+    throw new NotFoundError("Tournament not found");
   }
 
   const totalCost = calculateTotalCost(
