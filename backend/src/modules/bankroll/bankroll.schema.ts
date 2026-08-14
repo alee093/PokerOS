@@ -1,28 +1,37 @@
 import { z } from "zod";
 
 export const createBankrollSchema = z.object({
-  startingBalance: z.coerce
+  startingBalance: z
     .number()
-    .positive("Starting balance must be greater than zero"),
+    .nonnegative(
+      "Starting balance cannot be negative"
+    ),
 });
 
-export type CreateBankrollInput = z.infer<typeof createBankrollSchema>;
-
-import { BankrollTransactionType } from "@prisma/client";
-
 export const createTransactionSchema = z.object({
-  type: z.nativeEnum(BankrollTransactionType),
+  type: z.enum([
+    "DEPOSIT",
+    "WITHDRAWAL",
+  ]),
 
-  amount: z.coerce
+  amount: z
     .number()
-    .positive("Amount must be greater than zero"),
+    .positive(
+      "Amount must be greater than zero"
+    ),
 
   description: z
     .string()
     .trim()
-    .max(200)
+    .max(
+      200,
+      "Description must be at most 200 characters"
+    )
     .optional(),
 });
+
+export type CreateBankrollInput =
+  z.infer<typeof createBankrollSchema>;
 
 export type CreateTransactionInput =
   z.infer<typeof createTransactionSchema>;

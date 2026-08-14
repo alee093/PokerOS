@@ -3,12 +3,17 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 
+import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
+
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [error, setError] =
+  useState<string | null>(null);
 
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -27,7 +32,12 @@ export default function Login() {
         replace: true,
       });
     } catch (error) {
-      console.error("LOGIN ERROR", error);
+      setError(
+        getApiErrorMessage(
+          error,
+          "Could not log in"
+        )
+      );
     }
   }
 
@@ -54,6 +64,8 @@ export default function Login() {
       <button type="submit">
         Login
       </button>
+
+      {error && <p>{error}</p>}
     </form>
   );
 }

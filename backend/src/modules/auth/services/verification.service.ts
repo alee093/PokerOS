@@ -1,15 +1,15 @@
 import crypto from "crypto";
+
 import { prisma } from "../../../lib/prisma.js";
 
+import { BadRequestError } from "../../../errors/BadRequestError.js";
 
 export async function createVerificationToken(
   userId: string
 ) {
-
   const token = crypto
     .randomBytes(32)
     .toString("hex");
-
 
   await prisma.verificationToken.create({
     data: {
@@ -21,14 +21,12 @@ export async function createVerificationToken(
     },
   });
 
-
   return token;
 }
 
 export async function verifyEmailToken(
   token: string
 ) {
-
   const verificationToken =
     await prisma.verificationToken.findUnique({
       where: {
@@ -39,18 +37,19 @@ export async function verifyEmailToken(
       },
     });
 
-
   if (!verificationToken) {
-    throw new Error("Invalid verification token");
+    throw new BadRequestError(
+      "This verification link is invalid"
+    );
   }
-
 
   if (
     verificationToken.expiresAt < new Date()
   ) {
-    throw new Error("Verification token expired");
+    throw new BadRequestError(
+      "This verification link has expired"
+    );
   }
-
 
   await prisma.user.update({
     where: {
@@ -61,13 +60,11 @@ export async function verifyEmailToken(
     },
   });
 
-
   await prisma.verificationToken.delete({
     where: {
       id: verificationToken.id,
     },
   });
-
 
   return true;
 }

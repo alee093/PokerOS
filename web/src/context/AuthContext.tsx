@@ -62,9 +62,11 @@ export function AuthProvider({
   }
 
   async function logout(): Promise<void> {
-    await api.post("/auth/logout");
-
-    setUser(null);
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setUser(null);
+    }
   }
 
   useEffect(() => {

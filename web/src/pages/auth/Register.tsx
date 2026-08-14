@@ -1,42 +1,157 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import { api } from "../../services/api";
 
+function getPasswordRequirements(
+  password: string
+) {
+  return {
+    minLength:
+      password.length >= 8,
+
+    lowercase:
+      /[a-z]/.test(password),
+
+    uppercase:
+      /[A-Z]/.test(password),
+
+    number:
+      /[0-9]/.test(password),
+
+    special:
+      /[^A-Za-z0-9]/.test(
+        password
+      ),
+  };
+}
+
 export default function Register() {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [
+    username,
+    setUsername,
+  ] = useState("");
 
-  const [error, setError] = useState<string | null>(
-    null
-  );
+  const [
+    email,
+    setEmail,
+  ] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [
+    password,
+    setPassword,
+  ] = useState("");
+
+  const [
+    confirmPassword,
+    setConfirmPassword,
+  ] = useState("");
+
+  const [
+    passwordFocused,
+    setPasswordFocused,
+  ] = useState(false);
+
+  const [
+    error,
+    setError,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+  const passwordRequirements =
+    getPasswordRequirements(
+      password
+    );
+
+  const isPasswordValid =
+    Object.values(
+      passwordRequirements
+    ).every(Boolean);
+
+  const passwordsMatch =
+    password === confirmPassword;
+
+  const isEmailValid =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      email
+    );
 
   async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
+    event:
+      React.FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
     setError(null);
-    setLoading(true);
+
+    if (!isEmailValid) {
+      setError(
+        "Enter a valid email address"
+      );
+
+      return;
+    }
+
+    if (!passwordsMatch) {
+      setError(
+        "Passwords do not match"
+      );
+
+      return;
+    }
 
     try {
-      await api.post("/auth/register", {
-        username,
-        email,
-        password,
-      });
+      setLoading(true);
 
-      navigate("/auth/login");
-    } catch (error: any) {
-      setError(
-        error.response?.data?.message ??
-          "Something went wrong"
+      await api.post(
+        "/auth/register",
+        {
+          username,
+          email,
+          password,
+        }
       );
+
+      navigate(
+        "/auth/login"
+      );
+    } catch (error: any) {
+      const response =
+        error.response?.data;
+
+      if (
+        Array.isArray(
+          response?.errors
+        )
+      ) {
+        setError(
+          response.errors
+            .map(
+              (item: {
+                message: string;
+              }) =>
+                item.message
+            )
+            .join(". ")
+        );
+      } else {
+        setError(
+          response?.message ??
+            "Could not create account"
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -44,9 +159,15 @@ export default function Register() {
 
   return (
     <main>
-      <h1>Create account</h1>
+      <h1>
+        Create account
+      </h1>
 
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={
+          handleSubmit
+        }
+      >
         <div>
           <label htmlFor="username">
             Username
@@ -55,9 +176,16 @@ export default function Register() {
           <input
             id="username"
             type="text"
-            value={username}
-            onChange={(event) =>
-              setUsername(event.target.value)
+            value={
+              username
+            }
+            onChange={(
+              event
+            ) =>
+              setUsername(
+                event.target
+                  .value
+              )
             }
             required
           />
@@ -72,11 +200,24 @@ export default function Register() {
             id="email"
             type="email"
             value={email}
-            onChange={(event) =>
-              setEmail(event.target.value)
+            onChange={(
+              event
+            ) =>
+              setEmail(
+                event.target
+                  .value
+              )
             }
             required
           />
+
+          {email &&
+            !isEmailValid && (
+              <p>
+                Enter a valid
+                email address
+              </p>
+            )}
         </div>
 
         <div>
@@ -87,15 +228,104 @@ export default function Register() {
           <input
             id="password"
             type="password"
-            value={password}
-            onChange={(event) =>
-              setPassword(event.target.value)
+            value={
+              password
+            }
+            onChange={(
+              event
+            ) =>
+              setPassword(
+                event.target
+                  .value
+              )
+            }
+            onFocus={() =>
+              setPasswordFocused(
+                true
+              )
+            }
+            onBlur={() =>
+              setPasswordFocused(
+                false
+              )
             }
             required
           />
+
+          {passwordFocused &&
+            !isPasswordValid && (
+              <ul>
+                {!passwordRequirements.minLength && (
+                  <li>
+                    At least 8
+                    characters
+                  </li>
+                )}
+
+                {!passwordRequirements.lowercase && (
+                  <li>
+                    One lowercase
+                    letter
+                  </li>
+                )}
+
+                {!passwordRequirements.uppercase && (
+                  <li>
+                    One uppercase
+                    letter
+                  </li>
+                )}
+
+                {!passwordRequirements.number && (
+                  <li>
+                    One number
+                  </li>
+                )}
+
+                {!passwordRequirements.special && (
+                  <li>
+                    One special
+                    character
+                  </li>
+                )}
+              </ul>
+            )}
         </div>
 
-        {error && <p>{error}</p>}
+        <div>
+          <label htmlFor="confirmPassword">
+            Confirm password
+          </label>
+
+          <input
+            id="confirmPassword"
+            type="password"
+            value={
+              confirmPassword
+            }
+            onChange={(
+              event
+            ) =>
+              setConfirmPassword(
+                event.target
+                  .value
+              )
+            }
+            required
+          />
+
+          {confirmPassword &&
+            !passwordsMatch && (
+              <p>
+                Passwords do
+                not match
+              </p>
+            )}
+        </div>
+
+        {error && (
+          <p>{error}</p>
+        )}
 
         <button
           type="submit"
@@ -108,7 +338,8 @@ export default function Register() {
       </form>
 
       <p>
-        Already have an account?{" "}
+        Already have an
+        account?{" "}
         <Link to="/auth/login">
           Login
         </Link>

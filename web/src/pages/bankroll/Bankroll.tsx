@@ -10,8 +10,14 @@ import {
 import {
   createBankrollTransaction,
   getBankroll,
+  getBankrollTransactions,
+  type BankrollTransaction,
   type BankrollSummary,
 } from "../../services/bankroll.service";
+
+import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
+
+import TransactionHistory from "./components/TransactionHistory";
 
 import {
   formatCurrency,
@@ -45,11 +51,30 @@ export default function Bankroll() {
   const [error, setError] =
     useState<string | null>(null);
 
+  const [
+    transactions,
+    setTransactions,
+  ] = useState<
+    BankrollTransaction[]
+  >([]);
+
   async function loadBankroll() {
     try {
-      const data = await getBankroll();
+      const [
+        bankrollData,
+        transactionsData,
+      ] = await Promise.all([
+        getBankroll(),
+        getBankrollTransactions(),
+      ]);
 
-      setBankroll(data);
+      setBankroll(
+        bankrollData
+      );
+
+      setTransactions(
+        transactionsData
+      );
     } catch {
       setError(
         "Could not load bankroll"
@@ -103,8 +128,10 @@ export default function Bankroll() {
       await loadBankroll();
     } catch (error: any) {
       setError(
-        error.response?.data?.message ??
+        getApiErrorMessage(
+          error,
           "Could not create transaction"
+        )
       );
     } finally {
       setSubmitting(false);
@@ -256,6 +283,11 @@ export default function Bankroll() {
                 : "Add withdrawal"}
           </button>
         </form>
+        <hr />
+
+        <TransactionHistory
+          transactions={transactions}
+        />
       </section>
     </main>
   );

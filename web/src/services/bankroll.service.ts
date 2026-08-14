@@ -9,6 +9,14 @@ export interface CreateBankrollTransactionInput {
   amount: number;
   description?: string;
 }
+export interface BankrollTransaction {
+  id: string;
+  userId: string;
+  type: "DEPOSIT" | "WITHDRAWAL";
+  amount: string;
+  description: string | null;
+  createdAt: string;
+}
 
 export interface BankrollSummary {
   startingBalance: number;
@@ -43,6 +51,18 @@ export async function createBankrollTransaction(
   const response = await api.post(
     "/bankroll/transactions",
     data
+  );
+
+  return response.data;
+}
+
+export async function getBankrollTransactions(): Promise<
+  BankrollTransaction[]
+> {
+  const response = await api.get<
+    BankrollTransaction[]
+  >(
+    "/bankroll/transactions"
   );
 
   return response.data;

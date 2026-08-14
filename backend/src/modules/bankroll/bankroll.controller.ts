@@ -11,6 +11,7 @@ import {
   createBankroll,
   createTransaction,
   getBankrollSummary,
+  getBankrollTransactions,
 } from "./bankroll.service.js";
 
 export const createBankrollController = asyncHandler(
@@ -48,3 +49,18 @@ export const createTransactionController = asyncHandler(
     res.status(201).json(transaction);
   }
 );
+
+export const getBankrollTransactionsController =
+  asyncHandler(
+    async (
+      req: Request,
+      res: Response
+    ) => {
+      const transactions =
+        await getBankrollTransactions(
+          req.user!.id
+        );
+
+      res.json(transactions);
+    }
+  );

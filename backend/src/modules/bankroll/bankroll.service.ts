@@ -7,6 +7,7 @@ import type { BankrollSummaryDto } from "./dto/bankroll-summary.dto.js";
 
 import { ConflictError } from "../../errors/ConflictError.js";
 import { NotFoundError } from "../../errors/NotFoundError.js";
+import { BadRequestError } from "../../errors/BadRequestError.js";
 
 export async function createBankroll(
   userId: string,
@@ -111,6 +112,20 @@ export async function createTransaction(
   if (!bankroll) {
     throw new NotFoundError("Bankroll not configured");
   }
+  
+  if (data.type === "WITHDRAWAL") {
+    const summary =
+      await getBankrollSummary(userId);
+
+    if (
+      data.amount >
+      summary.currentBalance
+    ) {
+      throw new BadRequestError(
+        "Withdrawal cannot exceed your current bankroll"
+      );
+    }
+}
 
   return prisma.bankrollTransaction.create({
     data: {
@@ -123,6 +138,32 @@ export async function createTransaction(
       ...(data.description !== undefined && {
         description: data.description,
       }),
+    },
+  });
+}
+
+export async function getBankrollTransactions(
+  userId: string
+) {
+  const bankroll = await prisma.bankroll.findUnique({
+    where: {
+      userId,
+    },
+  });
+
+  if (!bankroll) {
+    throw new NotFoundError(
+      "Bankroll not configured"
+    );
+  }
+
+  return prisma.bankrollTransaction.findMany({
+    where: {
+      userId,
+    },
+
+    orderBy: {
+      createdAt: "desc",
     },
   });
 }

@@ -5,6 +5,8 @@ import { createTournament } from "../../services/tournament.service";
 
 import type { CreateTournamentInput } from "../../types/tournament";
 
+import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
+
 import TournamentForm from "./components/TournamentForm";
 
 export default function CreateTournament() {
@@ -30,8 +32,10 @@ export default function CreateTournament() {
       });
     } catch (error: any) {
       setError(
-        error.response?.data?.message ??
+        getApiErrorMessage(
+          error,
           "Could not create tournament"
+        )
       );
     } finally {
       setLoading(false);

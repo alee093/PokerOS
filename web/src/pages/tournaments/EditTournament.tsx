@@ -18,6 +18,8 @@ import type {
   Tournament,
 } from "../../types/tournament";
 
+import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
+
 import TournamentForm from "./components/TournamentForm";
 
 export default function EditTournament() {
@@ -86,8 +88,10 @@ export default function EditTournament() {
       );
     } catch (error: any) {
       setError(
-        error.response?.data?.message ??
+        getApiErrorMessage(
+          error,
           "Could not update tournament"
+        )
       );
     } finally {
       setSaving(false);

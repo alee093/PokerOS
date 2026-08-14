@@ -1,69 +1,188 @@
 import { z } from "zod";
 
-export const createTournamentSchema = z.object({
-  siteId: z.string().uuid(),
+const tournamentDateSchema = z.coerce
+  .date()
+  .refine(
+    (date) => date.getFullYear() >= 2000,
+    {
+      message:
+        "Tournament date must be after year 2000",
+    }
+  )
+  .refine(
+    (date) =>
+      date.getTime() <=
+      Date.now() + 24 * 60 * 60 * 1000,
+    {
+      message:
+        "Tournament date cannot be in the future",
+    }
+  );
 
-  name: z.string().trim().min(1).max(100),
+export const createTournamentSchema = z
+  .object({
+    siteId: z
+      .string()
+      .uuid(
+        "Select a valid poker site"
+      ),
 
-  format: z.enum([
-    "FREEZEOUT",
-    "REENTRY",
-    "PKO",
-    "MYSTERY_BOUNTY",
-    "SATELLITE",
-  ]),
+    name: z
+      .string()
+      .trim()
+      .min(
+        1,
+        "Tournament name is required"
+      )
+      .max(
+        100,
+        "Tournament name must be at most 100 characters"
+      ),
 
-  gameType: z.enum([
-    "NLH",
-    "PLO",
-    "PLO5",
-    "MIXED",
-    "OTHER",
-  ]),
+    format: z.enum([
+      "FREEZEOUT",
+      "REENTRY",
+      "PKO",
+      "MYSTERY_BOUNTY",
+      "SATELLITE",
+    ]),
 
-  speed: z.enum([
-    "REGULAR",
-    "TURBO",
-    "HYPER",
-    "DEEPSTACK",
-  ]),
+    gameType: z.enum([
+      "NLH",
+      "PLO",
+      "PLO5",
+      "MIXED",
+      "OTHER",
+    ]),
 
-  currency: z.enum([
-    "USD",
-    "EUR",
-    "GBP",
-    "ARS",
-  ]),
+    speed: z.enum([
+      "REGULAR",
+      "TURBO",
+      "HYPER",
+      "DEEPSTACK",
+    ]),
 
-  entries: z.number().int().min(1).default(1),
+    currency: z.enum([
+      "USD",
+      "EUR",
+      "GBP",
+      "ARS",
+    ]),
 
-  buyIn: z.number().nonnegative(),
+    entries: z
+      .number()
+      .int(
+        "Entries must be a whole number"
+      )
+      .min(
+        1,
+        "Entries must be at least 1"
+      )
+      .default(1),
 
-  fee: z.number().nonnegative(),
+    buyIn: z
+      .number()
+      .nonnegative(
+        "Buy-in cannot be negative"
+      ),
 
-  isBounty: z.boolean().default(false),
+    fee: z
+      .number()
+      .nonnegative(
+        "Fee cannot be negative"
+      ),
 
-  bountyCollected: z.number().nonnegative().default(0),
+    isBounty: z
+      .boolean()
+      .default(false),
 
-  prize: z.number().nonnegative(),
+    bountyCollected: z
+      .number()
+      .nonnegative(
+        "Bounty collected cannot be negative"
+      )
+      .default(0),
 
-  position: z.number().int().positive().optional(),
+    prize: z
+      .number()
+      .nonnegative(
+        "Prize cannot be negative"
+      ),
 
-  playersCount: z.number().int().min(2).optional(),
+    position: z
+      .number()
+      .int(
+        "Position must be a whole number"
+      )
+      .positive(
+        "Position must be greater than 0"
+      )
+      .optional(),
 
-  startedAt: z.coerce.date(),
+    playersCount: z
+      .number()
+      .int(
+        "Players count must be a whole number"
+      )
+      .min(
+        2,
+        "Players count must be at least 2"
+      )
+      .optional(),
 
-  finishedAt: z.coerce.date().optional(),
+    startedAt:
+      tournamentDateSchema,
 
-  notes: z.string().trim().max(1000).optional(),
-}).refine(
-  (data) =>
-    !data.finishedAt || data.finishedAt >= data.startedAt,
-  {
-    message: "finishedAt must be after startedAt",
-    path: ["finishedAt"],
-  }
-);
+    finishedAt:
+      tournamentDateSchema.optional(),
+
+    notes: z
+      .string()
+      .trim()
+      .max(
+        1000,
+        "Notes must be at most 1000 characters"
+      )
+      .optional(),
+  })
+
+  .refine(
+    (data) =>
+      !data.finishedAt ||
+      data.finishedAt >=
+        data.startedAt,
+    {
+      message:
+        "Finished time must be after the start time",
+      path: ["finishedAt"],
+    }
+  )
+
+  .refine(
+    (data) =>
+      !data.position ||
+      !data.playersCount ||
+      data.position <=
+        data.playersCount,
+    {
+      message:
+        "Position cannot be greater than the number of players",
+      path: ["position"],
+    }
+  )
+
+  .refine(
+    (data) =>
+      data.isBounty ||
+      data.bountyCollected === 0,
+    {
+      message:
+        "Bounty collected must be 0 for non-bounty tournaments",
+      path: ["bountyCollected"],
+    }
+  );
 
 export type CreateTournamentInput =
-  z.infer<typeof createTournamentSchema>;
+  z.infer<
+    typeof createTournamentSchema
+  >;

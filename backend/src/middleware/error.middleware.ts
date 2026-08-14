@@ -1,4 +1,9 @@
-import type { NextFunction, Request, Response } from "express";
+import type {
+  NextFunction,
+  Request,
+  Response,
+} from "express";
+
 import { ZodError } from "zod";
 
 import { AppError } from "../errors/AppError.js";
@@ -11,20 +16,32 @@ export function errorMiddleware(
 ) {
   console.error(error);
 
-  if (error instanceof AppError) {
-    return res.status(error.statusCode).json({
-      message: error.message,
+  if (error instanceof ZodError) {
+    return res.status(400).json({
+      message:
+        "Please check the information you entered",
+
+      errors: error.issues.map(
+        (issue) => ({
+          field:
+            issue.path.join("."),
+          message:
+            issue.message,
+        })
+      ),
     });
   }
 
-  if (error instanceof ZodError) {
-    return res.status(400).json({
-      message: "Validation failed",
-      errors: error.flatten(),
-    });
+  if (error instanceof AppError) {
+    return res
+      .status(error.statusCode)
+      .json({
+        message: error.message,
+      });
   }
 
   return res.status(500).json({
-    message: "Internal server error",
+    message:
+      "Something went wrong. Please try again later.",
   });
 }

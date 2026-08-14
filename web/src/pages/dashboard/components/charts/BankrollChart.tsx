@@ -1,4 +1,9 @@
 import {
+  useMemo,
+  useState,
+} from "react";
+
+import {
   CartesianGrid,
   Line,
   LineChart,
@@ -17,6 +22,11 @@ import {
   formatDate,
 } from "../../../../utils/formatters";
 
+type Range =
+  | "1M"
+  | "1Y"
+  | "LIFETIME";
+
 interface BankrollChartProps {
   history: BankrollHistoryPoint[];
 }
@@ -24,64 +34,139 @@ interface BankrollChartProps {
 export default function BankrollChart({
   history,
 }: BankrollChartProps) {
-  if (history.length === 0) {
-    return (
-      <section>
-        <h2>Bankroll Evolution</h2>
+  const [range, setRange] =
+    useState<Range>("1M");
 
-        <p>
-          No bankroll history yet.
-        </p>
-      </section>
+  const filteredHistory =
+    useMemo(() => {
+      if (range === "LIFETIME") {
+        return history;
+      }
+
+      const now = new Date();
+      const from = new Date(now);
+
+      if (range === "1M") {
+        from.setMonth(
+          from.getMonth() - 1
+        );
+      }
+
+      if (range === "1Y") {
+        from.setFullYear(
+          from.getFullYear() - 1
+        );
+      }
+
+      return history.filter(
+        (point) =>
+          new Date(point.date) >= from
+      );
+    }, [history, range]);
+
+  const data =
+    filteredHistory.map(
+      (point) => ({
+        date:
+          formatDate(point.date),
+
+        balance:
+          point.balance,
+      })
     );
-  }
-
-  const data = history.map(
-    (point) => ({
-      date: formatDate(point.date),
-      balance: point.balance,
-    })
-  );
 
   return (
     <section>
-      <h2>Bankroll Evolution</h2>
+      <header>
+        <h2>
+          Bankroll Evolution
+        </h2>
 
-      <div
-        style={{
-          width: "100%",
-          height: 300,
-        }}
-      >
-        <ResponsiveContainer>
-          <LineChart data={data}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-            />
+        <div>
+          <button
+            type="button"
+            onClick={() =>
+              setRange("1M")
+            }
+            disabled={
+              range === "1M"
+            }
+          >
+            1M
+          </button>
 
-            <XAxis
-              dataKey="date"
-            />
+          <button
+            type="button"
+            onClick={() =>
+              setRange("1Y")
+            }
+            disabled={
+              range === "1Y"
+            }
+          >
+            1Y
+          </button>
 
-            <YAxis />
+          <button
+            type="button"
+            onClick={() =>
+              setRange(
+                "LIFETIME"
+              )
+            }
+            disabled={
+              range ===
+              "LIFETIME"
+            }
+          >
+            Lifetime
+          </button>
+        </div>
+      </header>
 
-            <Tooltip
-              formatter={(value) =>
-                formatCurrency(
-                  Number(value)
-                )
-              }
-            />
+      {data.length === 0 ? (
+        <p>
+          No bankroll activity in this period.
+        </p>
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            height: 300,
+          }}
+        >
+          <ResponsiveContainer>
+            <LineChart
+              data={data}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+              />
 
-            <Line
-              type="monotone"
-              dataKey="balance"
-              stroke="#27d3c2"
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+              <XAxis
+                dataKey="date"
+              />
+
+              <YAxis />
+
+              <Tooltip
+                formatter={(value) =>
+                  formatCurrency(
+                    Number(value)
+                  )
+                }
+              />
+
+              <Line
+                type="monotone"
+                dataKey="balance"
+                stroke="#27d3c2"
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </section>
   );
 }
