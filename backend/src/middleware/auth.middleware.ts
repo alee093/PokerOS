@@ -1,7 +1,13 @@
-import type { NextFunction, Request, Response } from "express";
+import type {
+  NextFunction,
+  Request,
+  Response,
+} from "express";
+
 import jwt from "jsonwebtoken";
 
 import { UnauthorizedError } from "../errors/UnauthorizedError.js";
+import { COOKIE_NAME } from "../utils/auth-cookie.js";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -15,19 +21,13 @@ export function authMiddleware(
   _res: Response,
   next: NextFunction
 ) {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies[COOKIE_NAME];
 
-  if (!authHeader) {
+  if (!token) {
     return next(
-      new UnauthorizedError("Authentication required")
-    );
-  }
-
-  const [type, token] = authHeader.split(" ");
-
-  if (type !== "Bearer" || !token) {
-    return next(
-      new UnauthorizedError("Invalid token")
+      new UnauthorizedError(
+        "Authentication required"
+      )
     );
   }
 
@@ -43,7 +43,6 @@ export function authMiddleware(
     };
 
     next();
-
   } catch {
     next(
       new UnauthorizedError(

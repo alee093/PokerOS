@@ -4,8 +4,6 @@ import { mapTournamentsToStatisticsData } from "./utils/tournament-mapper.js";
 
 import { calculateTotals } from "./utils/calculations/calculate-totals.js";
 
-import { getBankrollSummary } from "../bankroll/bankroll.service.js";
-
 import {
   calculateABI,
   calculateAverageProfit,
@@ -14,9 +12,11 @@ import {
   calculateROI,
 } from "./utils/calculations/calculate-metrics.js";
 
-import type { StatisticsOverview } from "./types/overview.js";
-
 import { filterCurrentMonth } from "./utils/filter-current-month.js";
+
+import { getBankrollSummary } from "../bankroll/bankroll.service.js";
+
+import type { StatisticsOverview } from "./types/overview.js";
 
 export async function getStatisticsOverview(
   userId: string
@@ -30,16 +30,8 @@ export async function getStatisticsOverview(
   const statisticsData =
     mapTournamentsToStatisticsData(tournaments);
 
-  const currentMonthData =
-    filterCurrentMonth(statisticsData);
-
-  const currentMonthTotals =
-    calculateTotals(currentMonthData);  
-
   const totals =
     calculateTotals(statisticsData);
-
-  const bankroll = await getBankrollSummary(userId);
 
   const roi = calculateROI(
     totals.totalProfit,
@@ -66,39 +58,80 @@ export async function getStatisticsOverview(
       statisticsData
     );
 
+  const currentMonthData =
+    filterCurrentMonth(statisticsData);
+
+  const currentMonthTotals =
+    calculateTotals(currentMonthData);
+
+  const bankrollConfig =
+    await prisma.bankroll.findUnique({
+      where: {
+        userId,
+      },
+    });
+
+  let bankroll = {
+    current: 0,
+    starting: 0,
+    deposits: 0,
+    withdrawals: 0,
+  };
+
+  if (bankrollConfig) {
+    const bankrollSummary =
+      await getBankrollSummary(userId);
+
+    bankroll = {
+      current:
+        bankrollSummary.currentBalance,
+
+      starting:
+        bankrollSummary.startingBalance,
+
+      deposits:
+        bankrollSummary.deposits,
+
+      withdrawals:
+        bankrollSummary.withdrawals,
+    };
+  }
+
   return {
     thisMonth: {
-      tournaments: currentMonthTotals.totalTournaments,
+      tournaments:
+        currentMonthTotals.totalTournaments,
 
-      buyIns: currentMonthTotals.totalBuyIns,
+      buyIns:
+        currentMonthTotals.totalBuyIns,
 
-      prizes: currentMonthTotals.totalPrize,
+      prizes:
+        currentMonthTotals.totalPrize,
 
-      profit: currentMonthTotals.totalProfit,
+      profit:
+        currentMonthTotals.totalProfit,
     },
 
-    bankroll: {
-      current: bankroll.currentBalance,
-
-      starting: bankroll.startingBalance,
-
-      deposits: bankroll.deposits,
-
-      withdrawals: bankroll.withdrawals,
-    },
+    bankroll,
 
     lifetime: {
-      totalTournaments: totals.totalTournaments,
+      totalTournaments:
+        totals.totalTournaments,
 
-      totalBuyIns: totals.totalBuyIns,
+      totalBuyIns:
+        totals.totalBuyIns,
 
-      totalFees: totals.totalFees,
+      totalFees:
+        totals.totalFees,
 
-      totalCost: totals.totalCost,
+      totalCost:
+        totals.totalCost,
 
-      totalPrize: totals.totalPrize,
+      totalPrize:
+        totals.totalPrize,
 
-      totalProfit: totals.totalProfit,
+      totalProfit:
+        totals.totalProfit,
 
       averageProfit,
 

@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 
 import { asyncHandler } from "../../utils/asyncHandler.js";
 
+import { setAuthCookie, clearAuthCookie } from "../../utils/auth-cookie.js";
+
 import {
   loginSchema,
   registerSchema,
@@ -30,7 +32,11 @@ export const login = asyncHandler(
 
     const result = await loginUser(data);
 
-    res.json(result);
+    setAuthCookie(res, result.token);
+
+    res.json({
+      user: result.user,
+    });
   }
 );
 
@@ -49,3 +55,31 @@ export const verifyEmail = asyncHandler(
     });
   }
 );
+
+export async function logout(
+  _req: Request,
+  res: Response
+) {
+  clearAuthCookie(res);
+
+  return res.json({
+    message: "Logged out successfully",
+  });
+}
+
+export async function me(
+  req: Request,
+  res: Response
+) {
+  const user = req.user;
+
+  if (!user) {
+    return res.status(401).json({
+      message: "Authentication required",
+    });
+  }
+
+  return res.json({
+    user,
+  });
+}

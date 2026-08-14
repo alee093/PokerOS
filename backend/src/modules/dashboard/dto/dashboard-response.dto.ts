@@ -4,7 +4,7 @@ export interface DashboardResponseDto {
     starting: number;
     deposits: number;
     withdrawals: number;
-  };
+  } | null;
 
   thisMonth: {
     tournaments: number;
@@ -32,5 +32,11 @@ export interface DashboardResponseDto {
   bankrollHistory: {
     date: Date;
     balance: number;
+  }[];
+
+  profitHistory: {
+    date: Date;
+    profit: number;
+    cumulativeProfit: number;
   }[];
 }

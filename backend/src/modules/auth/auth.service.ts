@@ -8,13 +8,11 @@ import { sendVerificationEmail } from "../../services/email/email.service.js";
 
 
 export async function loginUser(data: LoginInput) {
-
   const user = await prisma.user.findUnique({
     where: {
       email: data.email,
     },
   });
-
 
   if (!user) {
     throw new Error("Invalid credentials");
@@ -29,17 +27,14 @@ export async function loginUser(data: LoginInput) {
     user.passwordHash
   );
 
-
   if (!passwordMatch) {
     throw new Error("Invalid credentials");
   }
-
 
   const token = generateToken({
     id: user.id,
     email: user.email,
   });
-
 
   return {
     user: {
