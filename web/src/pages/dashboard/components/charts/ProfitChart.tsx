@@ -1,7 +1,4 @@
-import {
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 
 import {
   CartesianGrid,
@@ -13,36 +10,25 @@ import {
   YAxis,
 } from "recharts";
 
-import type {
-  ProfitHistoryPoint,
-} from "../../../../types/dashboard";
+import type { ProfitHistoryPoint } from "../../../../types/dashboard";
+import { formatCurrency, formatDate } from "../../../../utils/formatters";
 
-import {
-  formatCurrency,
-  formatDate,
-} from "../../../../utils/formatters";
+import "./ProfitChart.css";
 
-type Range =
-  | "1M"
-  | "1Y"
-  | "LIFETIME";
-
-type ViewMode =
-  | "CUMULATIVE"
-  | "MONTHLY";
+type Range = "1M" | "1Y" | "LIFETIME";
+type ViewMode = "CUMULATIVE" | "MONTHLY";
 
 interface ProfitChartProps {
   history: ProfitHistoryPoint[];
 }
 
-export default function ProfitChart({
-  history,
-}: ProfitChartProps) {
-  const [range, setRange] =
-    useState<Range>("1M");
+const ACCENT = "#2dd9c5";
+const GRID = "rgba(255,255,255,0.08)";
+const AXIS = "#6b7280";
 
-  const [viewMode, setViewMode] =
-    useState<ViewMode>("CUMULATIVE");
+export default function ProfitChart({ history }: ProfitChartProps) {
+  const [range, setRange] = useState<Range>("1M");
+  const [viewMode, setViewMode] = useState<ViewMode>("CUMULATIVE");
 
   const filteredHistory = useMemo(() => {
     if (range === "LIFETIME") {
@@ -53,213 +39,138 @@ export default function ProfitChart({
     const from = new Date(now);
 
     if (range === "1M") {
-      from.setMonth(
-        from.getMonth() - 1
-      );
+      from.setMonth(from.getMonth() - 1);
     }
 
     if (range === "1Y") {
-      from.setFullYear(
-        from.getFullYear() - 1
-      );
+      from.setFullYear(from.getFullYear() - 1);
     }
 
-    return history.filter(
-      (point) =>
-        new Date(point.date) >= from
-    );
+    return history.filter((point) => new Date(point.date) >= from);
   }, [history, range]);
 
-  const cumulativeData =
-    useMemo(() => {
-      return filteredHistory.map(
-        (point) => ({
-          date: formatDate(
-            point.date
-          ),
+  const cumulativeData = useMemo(() => {
+    return filteredHistory.map((point) => ({
+      date: formatDate(point.date),
+      value: point.cumulativeProfit,
+    }));
+  }, [filteredHistory]);
 
-          value:
-            point.cumulativeProfit,
-        })
-      );
-    }, [filteredHistory]);
+  const monthlyData = useMemo(() => {
+    const monthlyMap = new Map<string, number>();
 
-  const monthlyData =
-    useMemo(() => {
-      const monthlyMap =
-        new Map<string, number>();
+    for (const point of filteredHistory) {
+      const date = new Date(point.date);
+      const key = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`;
 
-      for (
-        const point of filteredHistory
-      ) {
-        const date =
-          new Date(point.date);
+      const current = monthlyMap.get(key) ?? 0;
+      monthlyMap.set(key, current + point.profit);
+    }
 
-        const key =
-          `${date.getFullYear()}-${String(
-            date.getMonth() + 1
-          ).padStart(2, "0")}`;
+    return Array.from(monthlyMap.entries()).map(([month, profit]) => {
+      const [year, monthNumber] = month.split("-");
+      const date = new Date(Number(year), Number(monthNumber) - 1, 1);
 
-        const current =
-          monthlyMap.get(key) ?? 0;
+      return {
+        date: date.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        }),
+        value: profit,
+      };
+    });
+  }, [filteredHistory]);
 
-        monthlyMap.set(
-          key,
-          current + point.profit
-        );
-      }
-
-      return Array.from(
-        monthlyMap.entries()
-      ).map(([month, profit]) => {
-        const [
-          year,
-          monthNumber,
-        ] = month.split("-");
-
-        const date = new Date(
-          Number(year),
-          Number(monthNumber) - 1,
-          1
-        );
-
-        return {
-          date:
-            date.toLocaleDateString(
-              "en-US",
-              {
-                month: "short",
-                year: "numeric",
-              }
-            ),
-
-          value: profit,
-        };
-      });
-    }, [filteredHistory]);
-
-  const data =
-    viewMode === "CUMULATIVE"
-      ? cumulativeData
-      : monthlyData;
+  const data = viewMode === "CUMULATIVE" ? cumulativeData : monthlyData;
 
   return (
-    <section>
-      <header>
-        <h2>Profit Evolution</h2>
+    <section className="dashboard-card">
+      <header className="chart-card__header">
+        <h2 className="dashboard-card__title" style={{ marginBottom: 0 }}>
+          Profit Evolution
+        </h2>
 
-        <div>
-          <button
-            type="button"
-            onClick={() =>
-              setViewMode(
-                "CUMULATIVE"
-              )
-            }
-            disabled={
-              viewMode ===
-              "CUMULATIVE"
-            }
-          >
-            Cumulative
-          </button>
+        <div style={{ display: "flex", gap: "var(--space-3)" }}>
+          <div className="chart-card__toggle-group">
+            <button
+              type="button"
+              className="chart-card__toggle-btn"
+              onClick={() => setViewMode("CUMULATIVE")}
+              disabled={viewMode === "CUMULATIVE"}
+            >
+              Cumulative
+            </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              setViewMode(
-                "MONTHLY"
-              )
-            }
-            disabled={
-              viewMode ===
-              "MONTHLY"
-            }
-          >
-            Monthly
-          </button>
-        </div>
+            <button
+              type="button"
+              className="chart-card__toggle-btn"
+              onClick={() => setViewMode("MONTHLY")}
+              disabled={viewMode === "MONTHLY"}
+            >
+              Monthly
+            </button>
+          </div>
 
-        <div>
-          <button
-            type="button"
-            onClick={() =>
-              setRange("1M")
-            }
-            disabled={
-              range === "1M"
-            }
-          >
-            1M
-          </button>
+          <div className="chart-card__toggle-group">
+            <button
+              type="button"
+              className="chart-card__toggle-btn"
+              onClick={() => setRange("1M")}
+              disabled={range === "1M"}
+            >
+              1M
+            </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              setRange("1Y")
-            }
-            disabled={
-              range === "1Y"
-            }
-          >
-            1Y
-          </button>
+            <button
+              type="button"
+              className="chart-card__toggle-btn"
+              onClick={() => setRange("1Y")}
+              disabled={range === "1Y"}
+            >
+              1Y
+            </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              setRange(
-                "LIFETIME"
-              )
-            }
-            disabled={
-              range ===
-              "LIFETIME"
-            }
-          >
-            Lifetime
-          </button>
+            <button
+              type="button"
+              className="chart-card__toggle-btn"
+              onClick={() => setRange("LIFETIME")}
+              disabled={range === "LIFETIME"}
+            >
+              Lifetime
+            </button>
+          </div>
         </div>
       </header>
 
       {data.length === 0 ? (
-        <p>
+        <p className="dashboard-card__empty">
           No tournaments in this period.
         </p>
       ) : (
-        <div
-          style={{
-            width: "100%",
-            height: 300,
-          }}
-        >
+        <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer>
-            <LineChart
-              data={data}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-              />
-
-              <XAxis
-                dataKey="date"
-              />
-
-              <YAxis />
-
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+              <XAxis dataKey="date" stroke={AXIS} fontSize={12} />
+              <YAxis stroke={AXIS} fontSize={12} />
               <Tooltip
-                formatter={(value) =>
-                  formatCurrency(
-                    Number(value)
-                  )
-                }
+                formatter={(value) => formatCurrency(Number(value))}
+                contentStyle={{
+                  background: "#1c1f29",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 8,
+                  fontSize: 13,
+                }}
+                labelStyle={{ color: "#9aa0ac" }}
               />
-
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#27d3c2"
+                stroke={ACCENT}
                 strokeWidth={2}
+                dot={false}
               />
             </LineChart>
           </ResponsiveContainer>

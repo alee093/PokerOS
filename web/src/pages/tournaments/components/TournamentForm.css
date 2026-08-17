@@ -1,0 +1,38 @@
+@import "../../bankroll/Bankroll.css";
+
+.tournament-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tournament-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+.tournament-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.tournament-form__checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.tournament-form textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+@media (max-width: 700px) {
+  .tournament-form__grid {
+    grid-template-columns: 1fr;
+  }
+}

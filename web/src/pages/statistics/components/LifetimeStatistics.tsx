@@ -1,12 +1,23 @@
-import type {
-  StatisticsLifetime,
-} from "../../../types/statistics";
+import {
+  Clock,
+  CircleDollarSign,
+  Coins,
+  Percent,
+  Receipt,
+  Target,
+  Trophy,
+  Wallet,
+  TrendingUp,
+} from "lucide-react";
 
+import type { StatisticsLifetime } from "../../../types/statistics";
 import {
   formatCurrency,
   formatHours,
   formatPercentage,
 } from "../../../utils/formatters";
+
+import "../Statistics.css";
 
 interface LifetimeStatisticsProps {
   data: StatisticsLifetime;
@@ -15,84 +26,125 @@ interface LifetimeStatisticsProps {
 export default function LifetimeStatistics({
   data,
 }: LifetimeStatisticsProps) {
+  const isPositive = data.totalProfit >= 0;
+
   return (
-    <section>
-      <h2>Lifetime</h2>
+    <section className="dashboard-card">
+      <h2 className="dashboard-card__title">Lifetime</h2>
 
-      <p>
-        Tournaments:{" "}
-        {data.totalTournaments}
-      </p>
+      <div className="stat-grid stat-grid--3col">
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Trophy size={14} />
+            Tournaments
+          </span>
+          <span className="stat-card__value">{data.totalTournaments}</span>
+        </div>
 
-      <p>
-        Total Buy-ins:{" "}
-        {formatCurrency(
-          data.totalBuyIns
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Coins size={14} />
+            Total Buy-ins
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(data.totalBuyIns)}
+          </span>
+        </div>
 
-      <p>
-        Total Fees:{" "}
-        {formatCurrency(
-          data.totalFees
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Receipt size={14} />
+            Total Fees
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(data.totalFees)}
+          </span>
+        </div>
 
-      <p>
-        Total Cost:{" "}
-        {formatCurrency(
-          data.totalCost
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Wallet size={14} />
+            Total Cost
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(data.totalCost)}
+          </span>
+        </div>
 
-      <p>
-        Total Prizes:{" "}
-        {formatCurrency(
-          data.totalPrize
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <CircleDollarSign size={14} />
+            Total Prizes
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(data.totalPrize)}
+          </span>
+        </div>
 
-      <p>
-        Total Profit:{" "}
-        {formatCurrency(
-          data.totalProfit
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <CircleDollarSign size={14} />
+            Total Profit
+          </span>
+          <span
+            className={`stat-card__value ${
+              isPositive ? "text-success" : "text-danger"
+            }`}
+          >
+            {formatCurrency(data.totalProfit)}
+          </span>
+        </div>
 
-      <p>
-        Average Profit:{" "}
-        {formatCurrency(
-          data.averageProfit
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <TrendingUp size={14} />
+            Average Profit
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(data.averageProfit)}
+          </span>
+        </div>
 
-      <p>
-        ROI:{" "}
-        {formatPercentage(
-          data.roi
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Percent size={14} />
+            ROI
+          </span>
+          <span className="stat-card__value">
+            {formatPercentage(data.roi)}
+          </span>
+        </div>
 
-      <p>
-        ABI:{" "}
-        {formatCurrency(
-          data.abi
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Wallet size={14} />
+            ABI
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(data.abi)}
+          </span>
+        </div>
 
-      <p>
-        ITM:{" "}
-        {formatPercentage(
-          data.itm
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Target size={14} />
+            ITM
+          </span>
+          <span className="stat-card__value">
+            {formatPercentage(data.itm)}
+          </span>
+        </div>
 
-      <p>
-        Hours Played:{" "}
-        {formatHours(
-          data.hoursPlayed
-        )}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Clock size={14} />
+            Hours Played
+          </span>
+          <span className="stat-card__value">
+            {formatHours(data.hoursPlayed)}
+          </span>
+        </div>
+      </div>
     </section>
   );
 }

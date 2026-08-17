@@ -1,9 +1,9 @@
-import type { RecentTournament } from "../../../types/dashboard";
+import { Trophy } from "lucide-react";
 
-import {
-  formatCurrency,
-  formatDate,
-} from "../../../utils/formatters";
+import type { RecentTournament } from "../../../types/dashboard";
+import { formatCurrency, formatDate } from "../../../utils/formatters";
+
+import "./RecentTournaments.css";
 
 interface RecentTournamentsProps {
   tournaments: RecentTournament[];
@@ -13,28 +13,48 @@ export default function RecentTournaments({
   tournaments,
 }: RecentTournamentsProps) {
   return (
-    <section>
-      <h2>Recent Tournaments</h2>
+    <section className="dashboard-card">
+      <h2 className="dashboard-card__title">Recent Tournaments</h2>
 
       {tournaments.length === 0 ? (
-        <p>No tournaments yet.</p>
+        <p className="dashboard-card__empty">No tournaments yet.</p>
       ) : (
-        <ul>
-          {tournaments.map((tournament) => (
-            <li key={tournament.id}>
-              <strong>{tournament.name}</strong>
+        <ul className="activity-list">
+          {tournaments.map((tournament) => {
+            const isPositive = tournament.profit >= 0;
 
-              <span>
-                {" "}
-                — {formatCurrency(tournament.profit)}
-              </span>
+            return (
+              <li key={tournament.id} className="activity-list__item">
+                <span
+                  className={`activity-list__icon ${
+                    isPositive
+                      ? "activity-list__icon--positive"
+                      : "activity-list__icon--negative"
+                  }`}
+                >
+                  <Trophy size={16} />
+                </span>
 
-              <span>
-                {" "}
-                — {formatDate(tournament.startedAt)}
-              </span>
-            </li>
-          ))}
+                <div className="activity-list__body">
+                  <strong>{tournament.name}</strong>
+                  <span className="activity-list__date">
+                    {formatDate(tournament.startedAt)}
+                  </span>
+                </div>
+
+                <span
+                  className={
+                    isPositive
+                      ? "activity-list__amount text-success"
+                      : "activity-list__amount text-danger"
+                  }
+                >
+                  {isPositive ? "+" : ""}
+                  {formatCurrency(tournament.profit)}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

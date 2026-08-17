@@ -1,0 +1,40 @@
+@import "./Bankroll.css";
+
+.bankroll-setup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100svh - var(--space-7) * 2);
+}
+
+.bankroll-setup__card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.bankroll-setup__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.bankroll-setup__title {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-2);
+}
+
+.bankroll-setup__subtitle {
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-5);
+}
+
+.bankroll-setup .bankroll-form {
+  text-align: left;
+}

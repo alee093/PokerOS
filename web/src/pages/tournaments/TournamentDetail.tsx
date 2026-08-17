@@ -1,44 +1,28 @@
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 
 import {
   deleteTournament,
   getTournamentById,
 } from "../../services/tournament.service";
-
-import type {
-  Tournament,
-} from "../../types/tournament";
-
+import type { Tournament } from "../../types/tournament";
 import {
   formatCurrency,
   formatDate,
   formatHours,
 } from "../../utils/formatters";
 
+import "./Tournaments.css";
+
 export default function TournamentDetail() {
   const { id } = useParams();
-
   const navigate = useNavigate();
 
-  const [tournament, setTournament] =
-    useState<Tournament | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState<string | null>(null);
-
-  const [deleting, setDeleting] =
-    useState(false);
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function loadTournament() {
@@ -49,14 +33,10 @@ export default function TournamentDetail() {
       }
 
       try {
-        const data =
-          await getTournamentById(id);
-
+        const data = await getTournamentById(id);
         setTournament(data);
       } catch {
-        setError(
-          "Could not load tournament"
-        );
+        setError("Could not load tournament");
       } finally {
         setLoading(false);
       }
@@ -66,186 +46,125 @@ export default function TournamentDetail() {
   }, [id]);
 
   async function handleDelete() {
-    if (!id) {
-      return;
-    }
+    if (!id) return;
 
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this tournament?"
-      );
-
-    if (!confirmed) {
-      return;
-    }
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this tournament?"
+    );
+    if (!confirmed) return;
 
     try {
       setDeleting(true);
-
       await deleteTournament(id);
-
-      navigate(
-        "/tournaments",
-        {
-          replace: true,
-        }
-      );
+      navigate("/tournaments", { replace: true });
     } catch {
-      setError(
-        "Could not delete tournament"
-      );
-
+      setError("Could not delete tournament");
       setDeleting(false);
     }
   }
 
   if (loading) {
-    return <p>Loading tournament...</p>;
+    return <p className="dashboard-card__empty">Loading tournament...</p>;
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <p className="dashboard-card__empty">{error}</p>;
   }
 
   if (!tournament) {
     return null;
   }
 
-  return (
-    <main>
-      <header>
-        <h1>{tournament.name}</h1>
+  const profit = Number(tournament.profit);
+  const isPositive = profit >= 0;
 
-        <div>
+  const DETAILS: Array<[string, string]> = [
+    ["Site", tournament.site?.name ?? "Unknown"],
+    ["Format", tournament.format.replace("_", " ")],
+    ["Game", tournament.gameType],
+    ["Speed", tournament.speed],
+    ["Entries", String(tournament.entries)],
+    ["Buy-in", formatCurrency(Number(tournament.buyIn))],
+    ["Fee", formatCurrency(Number(tournament.fee))],
+    ["Total cost", formatCurrency(Number(tournament.totalCost))],
+    ["Prize", formatCurrency(Number(tournament.prize))],
+    ["Position", tournament.position ? String(tournament.position) : "—"],
+    [
+      "Players",
+      tournament.playersCount ? String(tournament.playersCount) : "—",
+    ],
+    ["Started", formatDate(tournament.startedAt)],
+    [
+      "Duration",
+      tournament.duration ? formatHours(tournament.duration / 3600) : "—",
+    ],
+  ];
+
+  return (
+    <div className="dashboard">
+      <header className="dashboard__header">
+        <h1 className="dashboard__title">{tournament.name}</h1>
+
+        <div className="dashboard__header-actions">
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/tournaments"
-              )
-            }
+            className="btn btn-secondary"
+            onClick={() => navigate("/tournaments")}
           >
+            <ArrowLeft size={16} />
             Back
           </button>
 
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                `/tournaments/${tournament.id}/edit`
-              )
-            }
+            className="btn btn-secondary"
+            onClick={() => navigate(`/tournaments/${tournament.id}/edit`)}
           >
+            <Pencil size={16} />
             Edit
           </button>
 
           <button
             type="button"
+            className="btn btn-secondary tournament-detail__delete"
             disabled={deleting}
             onClick={handleDelete}
           >
-            {deleting
-              ? "Deleting..."
-              : "Delete"}
+            <Trash2 size={16} />
+            {deleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       </header>
 
-      <section>
-        <p>
-          Site:{" "}
-          {tournament.site?.name ??
-            "Unknown"}
-        </p>
+      <section className="dashboard-card">
+        <div className="tournament-detail__profit">
+          <span className="stat-card__label">Profit</span>
+          <span
+            className={`tournament-detail__profit-value ${
+              isPositive ? "text-success" : "text-danger"
+            }`}
+          >
+            {isPositive ? "+" : ""}
+            {formatCurrency(profit)}
+          </span>
+        </div>
 
-        <p>
-          Format: {tournament.format}
-        </p>
+        <dl className="tournament-detail__grid">
+          {DETAILS.map(([label, value]) => (
+            <div key={label} className="tournament-detail__row">
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
 
-        <p>
-          Game: {tournament.gameType}
-        </p>
-
-        <p>
-          Speed: {tournament.speed}
-        </p>
-
-        <p>
-          Entries: {tournament.entries}
-        </p>
-
-        <p>
-          Buy-in:{" "}
-          {formatCurrency(
-            Number(tournament.buyIn)
-          )}
-        </p>
-
-        <p>
-          Fee:{" "}
-          {formatCurrency(
-            Number(tournament.fee)
-          )}
-        </p>
-
-        <p>
-          Total cost:{" "}
-          {formatCurrency(
-            Number(
-              tournament.totalCost
-            )
-          )}
-        </p>
-
-        <p>
-          Prize:{" "}
-          {formatCurrency(
-            Number(tournament.prize)
-          )}
-        </p>
-
-        <p>
-          Profit:{" "}
-          {formatCurrency(
-            Number(tournament.profit)
-          )}
-        </p>
-
-        <p>
-          Position:{" "}
-          {tournament.position ??
-            "—"}
-        </p>
-
-        <p>
-          Players:{" "}
-          {tournament.playersCount ??
-            "—"}
-        </p>
-
-        <p>
-          Started:{" "}
-          {formatDate(
-            tournament.startedAt
-          )}
-        </p>
-
-        <p>
-          Duration:{" "}
-          {tournament.duration
-            ? formatHours(
-                tournament.duration /
-                  3600
-              )
-            : "—"}
-        </p>
-
-        <p>
-          Notes:{" "}
-          {tournament.notes ??
-            "No notes"}
-        </p>
+        {tournament.notes && (
+          <div className="tournament-detail__notes">
+            <span className="stat-card__label">Notes</span>
+            <p>{tournament.notes}</p>
+          </div>
+        )}
       </section>
-    </main>
+    </div>
   );
 }

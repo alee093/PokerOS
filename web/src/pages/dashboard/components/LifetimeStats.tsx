@@ -1,47 +1,90 @@
-import type { DashboardLifetime } from "../../../types/dashboard";
+import { Clock, CircleDollarSign, Percent, Target, Trophy, Wallet } from "lucide-react";
 
+import type { DashboardLifetime } from "../../../types/dashboard";
 import {
   formatCurrency,
   formatHours,
   formatPercentage,
 } from "../../../utils/formatters";
 
+import "./LifetimeStats.css";
+
 interface LifetimeStatsProps {
   lifetime: DashboardLifetime;
 }
 
-export default function LifetimeStats({
-  lifetime,
-}: LifetimeStatsProps) {
+export default function LifetimeStats({ lifetime }: LifetimeStatsProps) {
+  const isPositive = lifetime.totalProfit >= 0;
+
   return (
-    <section>
-      <h2>Lifetime</h2>
+    <section className="dashboard-card">
+      <h2 className="dashboard-card__title">Lifetime</h2>
 
-      <p>
-        Tournaments: {lifetime.totalTournaments}
-      </p>
+      <div className="stat-grid stat-grid--3col">
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Trophy size={14} />
+            Tournaments
+          </span>
+          <span className="stat-card__value">
+            {lifetime.totalTournaments}
+          </span>
+        </div>
 
-      <p>
-        Profit:{" "}
-        {formatCurrency(lifetime.totalProfit)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <CircleDollarSign size={14} />
+            Profit
+          </span>
+          <span
+            className={`stat-card__value ${
+              isPositive ? "text-success" : "text-danger"
+            }`}
+          >
+            {formatCurrency(lifetime.totalProfit)}
+          </span>
+        </div>
 
-      <p>
-        ROI: {formatPercentage(lifetime.roi)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Percent size={14} />
+            ROI
+          </span>
+          <span className="stat-card__value">
+            {formatPercentage(lifetime.roi)}
+          </span>
+        </div>
 
-      <p>
-        ABI: {formatCurrency(lifetime.abi)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Wallet size={14} />
+            ABI
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(lifetime.abi)}
+          </span>
+        </div>
 
-      <p>
-        ITM: {formatPercentage(lifetime.itm)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Target size={14} />
+            ITM
+          </span>
+          <span className="stat-card__value">
+            {formatPercentage(lifetime.itm)}
+          </span>
+        </div>
 
-      <p>
-        Hours played:{" "}
-        {formatHours(lifetime.hoursPlayed)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Clock size={14} />
+            Hours Played
+          </span>
+          <span className="stat-card__value">
+            {formatHours(lifetime.hoursPlayed)}
+          </span>
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,27 +1,32 @@
-import type { DashboardBankroll } from "../../../types/dashboard";
+import { useNavigate } from "react-router-dom";
+import { ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react";
 
+import type { DashboardBankroll } from "../../../types/dashboard";
 import { formatCurrency } from "../../../utils/formatters";
 
-import { useNavigate } from "react-router-dom";
+import "./BankrollSummary.css";
 
 interface BankrollSummaryProps {
   bankroll: DashboardBankroll | null;
 }
 
-export default function BankrollSummary({
-  bankroll,
-}: BankrollSummaryProps) {
+export default function BankrollSummary({ bankroll }: BankrollSummaryProps) {
   const navigate = useNavigate();
+
   if (!bankroll) {
     return (
-      <section>
-        <h2>Bankroll</h2>
+      <section className="dashboard-card">
+        <h2 className="dashboard-card__title">Bankroll</h2>
 
-        <p>
+        <p className="dashboard-card__empty">
           You haven't configured your bankroll yet.
         </p>
 
-        <button type="button" onClick={() => navigate("/bankroll/setup")}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => navigate("/bankroll/setup")}
+        >
           Set up bankroll
         </button>
       </section>
@@ -29,44 +34,60 @@ export default function BankrollSummary({
   }
 
   return (
-    <section>
-      <h2>Bankroll</h2>
+    <section className="dashboard-card">
+      <div className="bankroll-summary__header">
+        <h2 className="dashboard-card__title">Bankroll</h2>
 
-      <p>
-        Current:{" "}
-        {formatCurrency(
-          bankroll.current
-        )}
-      </p>
-
-      <p>
-        Starting:{" "}
-        {formatCurrency(
-          bankroll.starting
-        )}
-      </p>
-
-      <p>
-        Deposits:{" "}
-        {formatCurrency(
-          bankroll.deposits
-        )}
-      </p>
-
-      <p>
-        Withdrawals:{" "}
-        {formatCurrency(
-          bankroll.withdrawals
-        )}
-      </p>
         <button
           type="button"
-          onClick={() =>
-            navigate("/bankroll")
-          }
+          className="btn btn-ghost bankroll-summary__manage"
+          onClick={() => navigate("/bankroll")}
         >
-          Manage bankroll
+          Manage
         </button>
+      </div>
+
+      <div className="stat-grid">
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Wallet size={14} />
+            Current
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(bankroll.current)}
+          </span>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Wallet size={14} />
+            Starting
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(bankroll.starting)}
+          </span>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <ArrowUpCircle size={14} />
+            Deposits
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(bankroll.deposits)}
+          </span>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <ArrowDownCircle size={14} />
+            Withdrawals
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(bankroll.withdrawals)}
+          </span>
+        </div>
+      </div>
     </section>
   );
 }

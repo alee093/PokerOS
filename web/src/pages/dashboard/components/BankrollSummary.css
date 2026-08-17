@@ -1,0 +1,17 @@
+@import "../Dashboard.css";
+
+.bankroll-summary__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.bankroll-summary__header .dashboard-card__title {
+  margin-bottom: 0;
+}
+
+.bankroll-summary__manage {
+  font-size: var(--font-size-xs);
+  padding: var(--space-1) var(--space-2);
+}

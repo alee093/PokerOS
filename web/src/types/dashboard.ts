@@ -31,6 +31,7 @@ export interface RecentTournament {
 export interface BankrollHistoryPoint {
   date: string;
   balance: number;
+  type: string;
 }
 
 export interface DashboardResponse {

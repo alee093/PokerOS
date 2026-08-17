@@ -140,14 +140,22 @@ export async function getDashboard(
   type BankrollEvent = {
     date: Date;
     amount: number;
+    type: string;
   };
 
   const events: BankrollEvent[] = [];
+
+  events.push({
+    date: bankrollConfig.createdAt,
+    amount: 0,
+    type: "INITIAL_BANKROLL",
+  });
 
   for (const tournament of tournaments) {
     events.push({
       date: tournament.startedAt,
       amount: Number(tournament.profit),
+      type: "TOURNAMENT",
     });
   }
 
@@ -159,6 +167,7 @@ export async function getDashboard(
       events.push({
         date: transaction.createdAt,
         amount,
+        type: transaction.type,
       });
     }
 
@@ -168,6 +177,7 @@ export async function getDashboard(
       events.push({
         date: transaction.createdAt,
         amount: -amount,
+        type: transaction.type,
       });
     }
   }
@@ -188,6 +198,7 @@ export async function getDashboard(
       return {
         date: event.date,
         balance,
+        type: event.type,
       };
     });
 

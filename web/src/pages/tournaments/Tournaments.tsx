@@ -1,47 +1,27 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Trophy } from "lucide-react";
 
-import {
-  useNavigate,
-} from "react-router-dom";
+import { getTournaments } from "../../services/tournament.service";
+import type { Tournament } from "../../types/tournament";
+import { formatCurrency, formatDate } from "../../utils/formatters";
 
-import {
-  getTournaments,
-} from "../../services/tournament.service";
-
-import type {
-  Tournament,
-} from "../../types/tournament";
-
-import {
-  formatCurrency,
-  formatDate,
-} from "../../utils/formatters";
+import "./Tournaments.css";
 
 export default function Tournaments() {
   const navigate = useNavigate();
 
-  const [tournaments, setTournaments] =
-    useState<Tournament[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState<string | null>(null);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadTournaments() {
       try {
         const data = await getTournaments();
-
         setTournaments(data);
       } catch {
-        setError(
-          "Could not load tournaments"
-        );
+        setError("Could not load tournaments");
       } finally {
         setLoading(false);
       }
@@ -51,119 +31,86 @@ export default function Tournaments() {
   }, []);
 
   if (loading) {
-    return <p>Loading tournaments...</p>;
+    return <p className="dashboard-card__empty">Loading tournaments...</p>;
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <p className="dashboard-card__empty">{error}</p>;
   }
 
   return (
-    <main>
-      <header>
-        <h1>Tournaments</h1>
+    <div className="dashboard">
+      <header className="dashboard__header">
+        <h1 className="dashboard__title">Tournaments</h1>
 
-        <div>
-          <button
-            type="button"
-            onClick={() =>
-              navigate("/dashboard")
-            }
-          >
-            Back to dashboard
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              navigate(
-                "/tournaments/new"
-              )
-            }
-          >
-            Add tournament
-          </button>
-        </div>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => navigate("/tournaments/new")}
+        >
+          <Plus size={16} />
+          Add Tournament
+        </button>
       </header>
 
       {tournaments.length === 0 ? (
-        <section>
-          <p>
+        <section className="dashboard-card tournaments-empty">
+          <Trophy size={32} className="tournaments-empty__icon" />
+          <p className="dashboard-card__empty">
             You haven't added any tournaments yet.
           </p>
-
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/tournaments/new"
-              )
-            }
+            className="btn btn-primary"
+            onClick={() => navigate("/tournaments/new")}
           >
             Add your first tournament
           </button>
         </section>
       ) : (
-        <section>
-          <ul>
-            {tournaments.map(
-              (tournament) => (
-                <li key={tournament.id}>
-                  <h2>
-                    {tournament.name}
-                  </h2>
+        <div className="tournaments-grid">
+          {tournaments.map((tournament) => {
+            const profit = Number(tournament.profit);
+            const isPositive = profit >= 0;
 
-                  <p>
-                    Site:{" "}
-                    {tournament.site?.name ??
-                      "Unknown"}
-                  </p>
-
-                  <p>
-                    Format:{" "}
-                    {tournament.format}
-                  </p>
-
-                  <p>
-                    Buy-in:{" "}
-                    {formatCurrency(
-                      Number(
-                        tournament.totalCost
-                      )
-                    )}
-                  </p>
-
-                  <p>
-                    Profit:{" "}
-                    {formatCurrency(
-                      Number(
-                        tournament.profit
-                      )
-                    )}
-                  </p>
-
-                  <p>
-                    Date:{" "}
-                    {formatDate(
-                      tournament.startedAt
-                    )}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigate(
-                        `/tournaments/${tournament.id}`
-                      )
+            return (
+              <button
+                key={tournament.id}
+                type="button"
+                className="tournament-card"
+                onClick={() => navigate(`/tournaments/${tournament.id}`)}
+              >
+                <div className="tournament-card__header">
+                  <h2>{tournament.name}</h2>
+                  <span
+                    className={
+                      isPositive
+                        ? "tournament-card__profit text-success"
+                        : "tournament-card__profit text-danger"
                     }
                   >
-                    View details
-                  </button>
-                </li>
-              )
-            )}
-          </ul>
-        </section>
+                    {isPositive ? "+" : ""}
+                    {formatCurrency(profit)}
+                  </span>
+                </div>
+
+                <div className="tournament-card__meta">
+                  <span>{tournament.site?.name ?? "Unknown site"}</span>
+                  <span>•</span>
+                  <span>{tournament.format.replace("_", " ")}</span>
+                </div>
+
+                <div className="tournament-card__footer">
+                  <span>
+                    Buy-in {formatCurrency(Number(tournament.totalCost))}
+                  </span>
+                  <span>{formatDate(tournament.startedAt)}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -32,6 +32,7 @@ export interface DashboardResponseDto {
   bankrollHistory: {
     date: Date;
     balance: number;
+    type: string;
   }[];
 
   profitHistory: {

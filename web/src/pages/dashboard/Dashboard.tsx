@@ -1,8 +1,5 @@
-import {
-  useEffect,
-  useState,
-} from "react";
-
+import { useEffect, useState } from "react";
+import { ChevronDown, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -19,19 +16,15 @@ import LifetimeStats from "./components/LifetimeStats";
 import RecentTournaments from "./components/RecentTournaments";
 import BankrollHistory from "./components/BankrollHistory";
 
-export default function Dashboard() {
-  const { user, logout } = useAuth();
+import "./Dashboard.css";
 
+export default function Dashboard() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [dashboard, setDashboard] =
-    useState<DashboardResponse | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState<string | null>(null);
+  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -40,9 +33,7 @@ export default function Dashboard() {
 
         setDashboard(data);
       } catch {
-        setError(
-          "Could not load dashboard"
-        );
+        setError("Could not load dashboard");
       } finally {
         setLoading(false);
       }
@@ -51,23 +42,12 @@ export default function Dashboard() {
     loadDashboard();
   }, []);
 
-  async function handleLogout() {
-    await logout();
-
-    navigate(
-      "/auth/login",
-      {
-        replace: true,
-      }
-    );
-  }
-
   if (loading) {
-    return <p>Loading dashboard...</p>;
+    return <p className="dashboard-card__empty">Loading dashboard...</p>;
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <p className="dashboard-card__empty">{error}</p>;
   }
 
   if (!dashboard) {
@@ -75,58 +55,42 @@ export default function Dashboard() {
   }
 
   return (
-    <main>
-      <header>
-        <h1>
-          Welcome, {user?.username}
-        </h1>
+    <div className="dashboard">
+      <header className="dashboard__header">
+        <h1 className="dashboard__title">Welcome, {user?.username ?? "Player"}</h1>
 
-        <button onClick={handleLogout}>
-          Logout
-        </button>
+        <div className="dashboard__header-actions">
+          <span className="dashboard__range">
+            This Month
+            <ChevronDown size={16} />
+          </span>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => navigate("/tournaments/new")}
+          >
+            <Plus size={16} />
+            Add Tournament
+          </button>
+        </div>
       </header>
 
-      <BankrollSummary
-        bankroll={dashboard.bankroll}
-      />
+      <div className="dashboard__grid-2">
+        <BankrollSummary bankroll={dashboard.bankroll} />
+        <MonthlySummary thisMonth={dashboard.thisMonth} />
+      </div>
 
-      <MonthlySummary
-        thisMonth={dashboard.thisMonth}
-      />
+      <LifetimeStats lifetime={dashboard.lifetime} />
 
-      <LifetimeStats
-        lifetime={dashboard.lifetime}
-      />
+      <BankrollChart history={dashboard.bankrollHistory} />
 
-      <RecentTournaments
-        tournaments={
-          dashboard.recentTournaments
-        }
-      />
+      <ProfitChart history={dashboard.profitHistory} />
 
-      <BankrollHistory
-        history={
-          dashboard.bankrollHistory
-        }
-      />
-
-      <BankrollChart
-        history={dashboard.bankrollHistory}
-      />
-
-      <ProfitChart
-        history={
-          dashboard.profitHistory
-        }
-      />
-      <button
-        type="button"
-        onClick={() =>
-          navigate("/tournaments")
-        }
-      >
-        Tournaments
-      </button>
-    </main>
+      <div className="dashboard__grid-2">
+        <RecentTournaments tournaments={dashboard.recentTournaments} />
+        <BankrollHistory history={dashboard.bankrollHistory} />
+      </div>
+    </div>
   );
 }

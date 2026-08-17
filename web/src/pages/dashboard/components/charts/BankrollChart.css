@@ -1,0 +1,40 @@
+@import "../../Dashboard.css";
+
+.chart-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.chart-card__toggle-group {
+  display: inline-flex;
+  background: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.chart-card__toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.chart-card__toggle-btn:disabled {
+  background: var(--accent);
+  color: var(--accent-text-on);
+  cursor: default;
+}
+
+.chart-card__toggle-btn:not(:disabled):hover {
+  color: var(--text-primary);
+}

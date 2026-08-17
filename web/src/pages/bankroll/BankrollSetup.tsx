@@ -1,101 +1,77 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { Wallet } from "lucide-react";
 
 import { createBankroll } from "../../services/bankroll.service";
+import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
+
+import "./BankrollSetup.css";
 
 export default function BankrollSetup() {
   const navigate = useNavigate();
 
-  const [startingBalance, setStartingBalance] =
-    useState("");
+  const [startingBalance, setStartingBalance] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState<string | null>(null);
-
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setError(null);
 
     const amount = Number(startingBalance);
 
-    if (
-      Number.isNaN(amount) ||
-      amount <= 0
-    ) {
-      setError(
-        "Starting balance must be greater than zero"
-      );
-
+    if (Number.isNaN(amount) || amount <= 0) {
+      setError("Starting balance must be greater than zero");
       return;
     }
 
     try {
       setLoading(true);
 
-      await createBankroll({
-        startingBalance: amount,
-      });
+      await createBankroll({ startingBalance: amount });
 
-      navigate("/dashboard", {
-        replace: true,
-      });
-    } catch (error: any) {
-      setError(
-        error.response?.data?.message ??
-          "Could not configure bankroll"
-      );
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      setError(getApiErrorMessage(error, "Could not configure bankroll"));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main>
-      <h1>Set up your bankroll</h1>
-
-      <p>
-        Enter the amount you're starting
-        PokerOS with.
-      </p>
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="startingBalance">
-            Starting balance
-          </label>
-
-          <input
-            id="startingBalance"
-            type="number"
-            min="0"
-            step="0.01"
-            value={startingBalance}
-            onChange={(event) =>
-              setStartingBalance(
-                event.target.value
-              )
-            }
-            required
-          />
+    <div className="bankroll-setup">
+      <section className="bankroll-setup__card">
+        <div className="bankroll-setup__icon">
+          <Wallet size={28} />
         </div>
 
-        {error && <p>{error}</p>}
+        <h1 className="bankroll-setup__title">Set Up Your Bankroll</h1>
+        <p className="bankroll-setup__subtitle">
+          Enter the amount you're starting PokerOS with.
+        </p>
 
-        <button
-          type="submit"
-          disabled={loading}
-        >
-          {loading
-            ? "Setting up..."
-            : "Set up bankroll"}
-        </button>
-      </form>
-    </main>
+        <form className="bankroll-form" onSubmit={handleSubmit}>
+          <div className="form-field">
+            <label htmlFor="startingBalance">Starting balance</label>
+            <input
+              id="startingBalance"
+              type="number"
+              min="0"
+              step="0.01"
+              value={startingBalance}
+              onChange={(event) => setStartingBalance(event.target.value)}
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          {error && <p className="auth-form__error">{error}</p>}
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Setting up..." : "Set up bankroll"}
+          </button>
+        </form>
+      </section>
+    </div>
   );
 }

@@ -1,32 +1,64 @@
+import { CircleDollarSign, Coins, Trophy, TrendingDown, TrendingUp } from "lucide-react";
+
 import type { DashboardThisMonth } from "../../../types/dashboard";
 import { formatCurrency } from "../../../utils/formatters";
+
+import "./MonthlySummary.css";
 
 interface MonthlySummaryProps {
   thisMonth: DashboardThisMonth;
 }
 
-export default function MonthlySummary({
-  thisMonth,
-}: MonthlySummaryProps) {
+export default function MonthlySummary({ thisMonth }: MonthlySummaryProps) {
+  const isPositive = thisMonth.profit >= 0;
+
   return (
-    <section>
-      <h2>This Month</h2>
+    <section className="dashboard-card">
+      <h2 className="dashboard-card__title">This Month</h2>
 
-      <p>
-        Tournaments: {thisMonth.tournaments}
-      </p>
+      <div className="stat-grid">
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Trophy size={14} />
+            Tournaments
+          </span>
+          <span className="stat-card__value">{thisMonth.tournaments}</span>
+        </div>
 
-      <p>
-        Buy-ins: {formatCurrency(thisMonth.buyIns)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <Coins size={14} />
+            Buy-ins
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(thisMonth.buyIns)}
+          </span>
+        </div>
 
-      <p>
-        Prizes: {formatCurrency(thisMonth.prizes)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            <CircleDollarSign size={14} />
+            Prizes
+          </span>
+          <span className="stat-card__value">
+            {formatCurrency(thisMonth.prizes)}
+          </span>
+        </div>
 
-      <p>
-        Profit: {formatCurrency(thisMonth.profit)}
-      </p>
+        <div className="stat-card">
+          <span className="stat-card__label">
+            {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+            Profit
+          </span>
+          <span
+            className={`stat-card__value ${
+              isPositive ? "text-success" : "text-danger"
+            }`}
+          >
+            {formatCurrency(thisMonth.profit)}
+          </span>
+        </div>
+      </div>
     </section>
   );
 }
