@@ -5,6 +5,7 @@ import {
   LogOut,
   Spade,
   Trophy,
+  Settings,
 } from "lucide-react";
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -18,9 +19,8 @@ const NAV_ITEMS = [
   { to: "/tournaments", label: "Tournaments", icon: Trophy },
   { to: "/bankroll", label: "Bankroll", icon: CircleDollarSign },
   { to: "/statistics", label: "Statistics", icon: BarChart3 },
-  // Descomentar cuando existan las rutas/páginas correspondientes:
   // { to: "/profile", label: "Profile", icon: UserRound },
-  // { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -60,7 +60,15 @@ export default function Sidebar() {
       <div className="sidebar__footer">
         <div className="sidebar__user">
           <div className="sidebar__avatar">
-            {user?.username?.[0]?.toUpperCase() ?? "?"}
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.username}
+              />
+            ) : (
+              user?.username?.[0]?.toUpperCase() ??
+              "?"
+            )}
           </div>
           <span>Welcome, {user?.username ?? "Player"}</span>
         </div>

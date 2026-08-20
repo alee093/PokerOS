@@ -70,6 +70,7 @@
 .dashboard-card__empty {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
 }
 
 .stat-grid {

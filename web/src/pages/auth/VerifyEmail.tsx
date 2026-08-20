@@ -1,29 +1,19 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
-import {
-  Link,
-  useSearchParams,
-} from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { CheckCircle2, Loader2, Spade, XCircle } from "lucide-react";
 
 import { api } from "../../services/api";
 
+import "./VerifyEmail.css";
+
+type Status = "loading" | "success" | "error";
+
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
-
   const verificationStarted = useRef(false);
 
-  const [status, setStatus] =
-    useState<"loading" | "success" | "error">(
-      "loading"
-    );
-
-  const [message, setMessage] = useState(
-    "Verifying your email..."
-  );
+  const [status, setStatus] = useState<Status>("loading");
+  const [message, setMessage] = useState("Verifying your email...");
 
   useEffect(() => {
     if (verificationStarted.current) {
@@ -42,23 +32,14 @@ export default function VerifyEmail() {
 
     async function verifyEmail() {
       try {
-        await api.get("/auth/verify-email", {
-          params: {
-            token,
-          },
-        });
+        await api.get("/auth/verify-email", { params: { token } });
 
         setStatus("success");
-
-        setMessage(
-          "Email verified successfully"
-        );
+        setMessage("Your email has been verified successfully.");
       } catch (error: any) {
         setStatus("error");
-
         setMessage(
-          error.response?.data?.message ??
-            "Email verification failed"
+          error.response?.data?.message ?? "Email verification failed"
         );
       }
     }
@@ -67,16 +48,45 @@ export default function VerifyEmail() {
   }, [searchParams]);
 
   return (
-    <main>
-      <h1>Email Verification</h1>
+    <div className="verify-email">
+      <div className="verify-email__logo">
+        <Spade size={28} className="verify-email__logo-icon" />
+        <span>
+          Poker<strong>OS</strong>
+        </span>
+      </div>
 
-      <p>{message}</p>
+      <section className="verify-email__card">
+        <div
+          className={`verify-email__icon verify-email__icon--${status}`}
+        >
+          {status === "loading" && (
+            <Loader2 size={28} className="verify-email__spinner" />
+          )}
+          {status === "success" && <CheckCircle2 size={28} />}
+          {status === "error" && <XCircle size={28} />}
+        </div>
 
-      {status === "success" && (
-        <Link to="/auth/login">
-          Go to login
-        </Link>
-      )}
-    </main>
+        <h1 className="verify-email__title">
+          {status === "loading" && "Verifying your email"}
+          {status === "success" && "Email verified"}
+          {status === "error" && "Verification failed"}
+        </h1>
+
+        <p className="verify-email__message">{message}</p>
+
+        {status === "success" && (
+          <Link to="/auth/login" className="btn btn-primary">
+            Go to login
+          </Link>
+        )}
+
+        {status === "error" && (
+          <Link to="/auth/register" className="btn btn-secondary">
+            Back to registration
+          </Link>
+        )}
+      </section>
+    </div>
   );
 }

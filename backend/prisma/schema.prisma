@@ -84,7 +84,7 @@ model Tournament {
   id String @id @default(uuid())
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   siteId String
   site   PokerSite @relation(fields: [siteId], references: [id])

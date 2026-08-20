@@ -23,6 +23,8 @@ import EditTournament from "../pages/tournaments/EditTournament";
 
 import Statistics from "../pages/statistics/Statistics";
 
+import Settings from "../pages/settings/Settings";
+
 import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRouter() {
@@ -89,6 +91,11 @@ export default function AppRouter() {
           <Route
             path="/statistics"
             element={<Statistics />}
+          />
+
+          <Route
+            path="/settings"
+            element={<Settings />}
           />
         </Route>
 

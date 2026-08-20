@@ -13,12 +13,15 @@ import type {
   LoginInput,
 } from "../types/auth.js";
 
+import { getCurrentUser } from "../services/user.service.js";
+
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   isAuthenticated: boolean;
   login: (data: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext =
@@ -41,11 +44,10 @@ export function AuthProvider({
 
   async function loadUser(): Promise<void> {
     try {
-      const response = await api.get(
-        "/auth/me"
-      );
+      const user =
+        await getCurrentUser();
 
-      setUser(response.data.user);
+      setUser(user);
     } catch {
       setUser(null);
     } finally {
@@ -73,6 +75,10 @@ export function AuthProvider({
     loadUser();
   }, []);
 
+  async function refreshUser(): Promise<void> {
+    await loadUser();
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -82,6 +88,7 @@ export function AuthProvider({
           user !== null,
         login,
         logout,
+        refreshUser,
       }}
     >
       {children}

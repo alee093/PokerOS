@@ -10,7 +10,6 @@ interface BankrollHistoryProps {
 }
 
 export default function BankrollHistory({ history }: BankrollHistoryProps) {
-  // Muestra los movimientos más recientes primero, últimos 8
   const recentPoints = [...history].reverse().slice(0, 8);
 
   const formatType = (type: string) => {
